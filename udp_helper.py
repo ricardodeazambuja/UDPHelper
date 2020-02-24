@@ -58,7 +58,7 @@ class UDPHelper(object):
 
         data_header = struct.pack('>I', len(data))  # d=>8bytes
         data = data_header + \
-            ''.join([struct.pack(">d", float(ji)) for ji in data])
+            b''.join([struct.pack(">d", float(ji)) for ji in data])
 
         self._sockO.sendto(data, (self._IPO, self._PORTO))
 
@@ -76,7 +76,7 @@ class UDPHelper(object):
 
         msglen = struct.unpack('>I', msg[:4])[0]
 
-        return struct.unpack('>'+''.join(['d']*msglen), msg[4:])
+        return struct.unpack('>'+b''.join(['d']*msglen), msg[4:])
 
     def recv_msg_nonblocking(self):
         data = b''
@@ -87,7 +87,7 @@ class UDPHelper(object):
             except IOError:
                 if data:
                     msglen = struct.unpack('>I', data[:4])[0]
-                    return struct.unpack('>'+''.join(['d']*msglen), data[4:])
+                    return struct.unpack('>'+b''.join(['d']*msglen), data[4:])
                 else:
                     return None
             data += packet
