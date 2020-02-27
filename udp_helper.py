@@ -63,6 +63,9 @@ class UDPHelper(object):
         self._sockO.sendto(data, (self._IPO, self._PORTO))
 
     def recv_msg(self, timeout=None):
+        '''Read the first received message and block if 
+        nothing is available.
+        '''
         assert self._sockI, 'init_receiver was not initialized!'
 
         if timeout:
@@ -79,17 +82,20 @@ class UDPHelper(object):
         return struct.unpack('>'+''.join(['d']*msglen), msg[4:])
 
     def recv_msg_nonblocking(self):
+        '''Read the last received message, non-blocking.
+        '''
         data = b''
         while True:
             try:
                 packet = self._sockI.recv(self._buffersize,
                                           socket.MSG_DONTWAIT)
             except IOError:
-                if data:
+                received_data = None
+                while data:
                     msglen = struct.unpack('>I', data[:4])[0]
-                    return struct.unpack('>'+''.join(['d']*msglen), data[4:])
-                else:
-                    return None
+                    received_data = struct.unpack('>'+''.join(['d']*msglen), data[4:4+msglen*8])
+                    data = data[4+msglen*8:]
+                return received_data
             data += packet
 
 
@@ -101,10 +107,18 @@ if __name__ == '__main__':
     conn.init_sender('127.0.0.1', 8989)
     conn.init_receiver('127.0.0.1', 8989)
 
-    conn.send_msg([10, 12, 34])
+    msg1 = [1, 2, 3]
+    msg2 = [4, 5, 6]
+    print("First msg: {}".format(msg1))
+    conn.send_msg(msg1)
+    print("Second msg: {}".format(msg2))
+    conn.send_msg(msg2)
     time.sleep(0.1)
-    print(conn.recv_msg())
+    print("recv_msg: ", conn.recv_msg())
 
-    conn.send_msg([10, 12, 34])
+    print("First msg: {}".format(msg1))
+    conn.send_msg(msg1)
+    print("Second msg: {}".format(msg2))
+    conn.send_msg(msg2)
     time.sleep(0.1)
-    print(conn.recv_msg_nonblocking())
+    print("recv_msg_nonblocking: ", conn.recv_msg_nonblocking())
