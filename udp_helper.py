@@ -76,7 +76,7 @@ class UDPHelper(object):
 
         msglen = struct.unpack('>I', msg[:4])[0]
 
-        return struct.unpack('>'+b''.join(['d']*msglen), msg[4:])
+        return struct.unpack('>'+''.join(['d']*msglen), msg[4:])
 
     def recv_msg_nonblocking(self):
         data = b''
@@ -87,7 +87,7 @@ class UDPHelper(object):
             except IOError:
                 if data:
                     msglen = struct.unpack('>I', data[:4])[0]
-                    return struct.unpack('>'+b''.join(['d']*msglen), data[4:])
+                    return struct.unpack('>'+''.join(['d']*msglen), data[4:])
                 else:
                     return None
             data += packet
